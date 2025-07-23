@@ -1,0 +1,113 @@
+﻿@page "/retention"
+@rendermode InteractiveAuto
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using VSM.Client.Datamodel
+
+<h3>Retention settings</h3>
+<div class="grid">
+    <div class="grid">
+        @*<QuickGrid Items="@VisibleRows.AsQueryable()" TGridItem="Folder" Style="height: 480px; width: 100%;"*@
+        <QuickGrid Items="@VisibleRows.AsQueryable()" TGridItem="Folder" Virtualize="true" >
+            <TemplateColumn TGridItem="Folder" Title="Tree-Name" >
+                <ChildContent Context="item">
+                    <div style="padding-left:@(item.Level * 15)px;">
+                        @if (item.Children.Count() > 0)
+                        {
+                            <button class="e-flat" @onclick="() => ToggleExpand(item)">
+                                @(item.IsExpanded ? "▾" : "▸")
+                            </button>
+                        }
+                        @item.Name
+                    </div>
+                </ChildContent>
+            </TemplateColumn>
+            <PropertyColumn Property="@(item => item.Attributs.Review)" />
+            <PropertyColumn Property="@(item => item.Attributs.Path)" />
+            <PropertyColumn Property="@(item => item.Attributs.LongTerm)" />
+            <PropertyColumn Property="@(item => item.Attributs._2025_Q4)" />
+            <PropertyColumn Property="@(item => item.Attributs._2026_Q1)" />
+            <PropertyColumn Property="@(item => item.Attributs._2026_Q2)" />
+
+        </QuickGrid>
+    </div>
+</div>
+<div class="master-detail">
+    <div class="master">
+    </div>
+    <div class="detail">
+        <div class="property-panel-content" Style="height: 280px; width: 100%;">
+            <table id="property" class="property-panel-table">
+                <!-- Detail table content here -->
+                <h3>For settings Retentions</h3>
+
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private List<Folder> TreeRoots = new();
+    private List<Folder> VisibleRows = new();
+    private RootFolder? rootFolder;
+
+    //private Folder? current_cell;
+    public string selected_folder_name = "No folder selected";
+    public string selected_retention = "No retention selected";
+
+    protected override void OnInitialized()
+    {
+        //looks like OnInitialized is called twice so lets check if we have already processed the root folder
+        if (rootFolder != DataModel.Instance.GetRootFolder())
+        {
+            rootFolder = DataModel.Instance.GetRootFolder();
+            if (rootFolder != null)
+            {
+                DataModel.Instance.SetRootFolder(rootFolder);
+                rootFolder.FolderTree = DataModel.Instance.GenerateFolderTreeForRootFolder(rootFolder);
+                TreeRoots = rootFolder.FolderTree.Children;
+                RefreshVisibleRows();
+            }
+        }
+
+
+    }
+    private void ToggleExpand(Folder node)
+    {
+        node.IsExpanded = !node.IsExpanded;
+        RefreshVisibleRows();
+    }
+
+    private void RefreshVisibleRows()
+    {
+        VisibleRows = FlattenVisible(TreeRoots);
+    }
+
+    private List<Folder> FlattenVisible(IEnumerable<Folder> nodes)
+    {
+        var result = new List<Folder>();
+        foreach (var node in nodes)
+        {
+            result.Add(node);
+            if (node.IsExpanded)
+            {
+                result.AddRange(FlattenVisible(node.Children));
+            }
+        }
+
+        return result;
+    }
+
+    /*    private void OnCellClick(DataGridCell<Folder> args)
+    {
+    // Store the clicked item in current_cell for further processing
+    current_cell = args.Item as Folder;
+    selected_folder_name = current_cell?.Name ?? "No folder selected";
+    selected_retention = $"{args.GridColumn},{args.Element}";
+    
+
+    // Optionally, you can perform additional actions based on the clicked item
+    // For example, you can update a property or trigger an event
+    //StateHasChanged(); // Refresh the UI if needed
+    }*/
+}

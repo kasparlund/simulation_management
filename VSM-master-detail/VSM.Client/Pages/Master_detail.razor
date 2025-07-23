@@ -1,0 +1,54 @@
+@page "/md"
+@rendermode InteractiveAuto
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<FluentLayout Style="margin-top: 10px;">
+    <FluentStack Orientation="Orientation.Horizontal" Width="100%">
+
+        <FluentBodyContent>
+            <div class="master-detail">
+                <div class="master">
+                    <h3>Master</h3>
+                </div>
+                <div class="detail">
+                    <div class="property-panel-content">
+                        <table id="property" class="property-panel-table" style="width:100%">
+                            <h3>Detail</h3>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </FluentBodyContent>
+    </FluentStack>
+
+</FluentLayout>
+<style>
+    .master-detail {
+        min-width: 100%;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .master {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .detail {
+        flex: 0 0 225px;
+        min-width: 225px;
+        max-width: 225px;
+    }
+
+    .master,
+    .detail {
+        box-sizing: border-box;
+        border: 2px solid #007bff;
+        /* Add a blue contour line */
+        border-radius: 6px;
+        padding: 10px;
+        background: #fff;
+    }
+</style>

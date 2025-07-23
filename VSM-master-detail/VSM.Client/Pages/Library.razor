@@ -1,0 +1,100 @@
+﻿@page "/library"
+@rendermode InteractiveAuto
+@using Microsoft.FluentUI.AspNetCore.Components
+@using VSM.Client.Datamodel
+@inject NavigationManager Navigation
+
+<PageTitle>Library</PageTitle>
+
+
+
+<div style="display:flex">
+    <p>Login to access your simulations:</p>
+    <FluentTextField @bind-Value="user_initials" Placeholder="your initials"></FluentTextField>
+
+    <FluentButton OnClick="@StartLoadingAsync" Appearance="Appearance.Accent">Login</FluentButton>
+
+</div>
+
+@if (is_logged_in)
+{
+    <h4>Add a new root folder</h4>
+    <FluentCombobox AriaLabel="Root folder" Items="@unregistered_rootFolders.Select(r => r.root_path).ToList()"
+        @bind-Value="@selected_unregistered_rootFolder_name" Height="200px" />
+    @if (selected_unregistered_rootFolder_name != null && selected_unregistered_rootFolder_name.Length > 0)
+    {
+
+        register_new_rootFolder(selected_unregistered_rootFolder_name);
+        selected_unregistered_rootFolder_name = null;
+    }
+
+    <h1>Simulations libraries that @user_initials has access to:</h1>
+
+    <FluentListbox Items=@rootFolders OptionText="@(r => r.root_path)" @bind-Value="@selected_root_path" />
+    <p> Going to retention page for: @selected_root_path<br /></p>
+
+    @if (selected_root_path != null && selected_root_path.Length > 0)
+    {
+        SelectRootFolder(selected_root_path);
+    }
+}
+
+@code {
+    string? selected_root_path;
+
+    string? user_initials;
+    bool is_logged_in = false;
+
+    List<RootFolder> unregistered_rootFolders = new List<RootFolder>();
+    string? selected_unregistered_rootFolder_name;
+
+    List<RootFolder> rootFolders = new List<RootFolder>();
+
+    private void Login()
+    {
+        user_initials = user_initials ?? "";
+    }
+
+    async Task StartLoadingAsync()
+    {
+        if (user_initials != null && user_initials.Length > 0)
+        {
+            DataModel.Instance.PerformUserLogIn(user_initials);
+            is_logged_in = user_initials != null && user_initials.Length > 0;
+            UpdateFolders();
+            //await DataSource.WaitAsync(2000, () => loading = false);
+            await Task.Delay(2000);
+        }
+    }
+
+    private void UpdateFolders()
+    {
+        rootFolders = DataModel.Instance.GetRootFoldersForUser();
+        unregistered_rootFolders = DataModel.Instance.GetUnRegisteredRootFolders();
+
+    }
+
+    private void register_new_rootFolder(string new_rootFolder_name)
+    {
+        RootFolder? root_folder = unregistered_rootFolders.Where(r => r.root_path == new_rootFolder_name).FirstOrDefault();
+
+        if (root_folder != null)
+        {
+            bool success = DataModel.Instance.RegisterRootFolder(root_folder);
+            if (success)
+            {
+                UpdateFolders();
+            }
+        }
+    }
+
+    private void SelectRootFolder(string root_path)
+    {
+        RootFolder? root_folder = rootFolders.Where(r => r.root_path == root_path).FirstOrDefault();
+        if (root_folder != null)
+        {
+            DataModel.Instance.SetRootFolder(root_folder);
+            Navigation.NavigateTo("retention");
+        }
+    }
+}
