@@ -7,19 +7,20 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/simulation_management.sln",
+                "${workspaceFolder}/simulation_management.slnx",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
             "problemMatcher": "$msCompile"
         },
+        
         {
             "label": "publish",
             "command": "dotnet",
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/simulation_management.sln",
+                "${workspaceFolder}/simulation_management.slnx",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -33,7 +34,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/simulation_management.sln"
+                "${workspaceFolder}/simulation_management.slnx"
             ],
             "problemMatcher": "$msCompile"
         }
